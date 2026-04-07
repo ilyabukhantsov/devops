@@ -6,18 +6,21 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y nginx mariadb-server openjdk-21-jdk sudo
 
 echo "--- [2/7] Створення користувачів ---"
-# Системний користувач для застосунку (без логіну)
-sudo useradd -r -m -s /usr/sbin/nologin app || true
+# Системний користувач для застосунку
+sudo useradd -r -m -d /home/app -s /usr/sbin/nologin app || true
 
-# Користувачі для роботи та перевірки
 users=("student" "teacher" "operator")
 for user in "${users[@]}"; do
     if id "$user" &>/dev/null; then
         echo "Користувач $user вже існує"
     else
-        sudo useradd -m -s /bin/bash "$user"
+        if getent group "$user" &>/dev/null; then
+            sudo useradd -m -g "$user" -s /bin/bash "$user"
+        else
+            sudo useradd -m -s /bin/bash "$user"
+        fi
+        
         echo "$user:12345678" | sudo chpasswd
-        # Примусова зміна пароля при першому вході (крім student)
         if [ "$user" != "student" ]; then
             sudo chage -d 0 "$user"
         fi
