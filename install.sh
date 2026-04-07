@@ -6,8 +6,7 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y nginx mariadb-server openjdk-21-jdk sudo
 
 echo "--- [2/7] Створення користувачів ---"
-# Системний користувач для застосунку
-sudo useradd -r -m -d /home/app -s /usr/sbin/nologin app || true
+sudo useradd -r -m -d /home/app -s /usr/sbin/nologin app 2>/dev/null || true
 
 users=("student" "teacher" "operator")
 for user in "${users[@]}"; do
@@ -15,6 +14,7 @@ for user in "${users[@]}"; do
         echo "Користувач $user вже існує"
     else
         if getent group "$user" &>/dev/null; then
+            echo "Група $user вже існує, додаємо користувача до неї..."
             sudo useradd -m -g "$user" -s /bin/bash "$user"
         else
             sudo useradd -m -s /bin/bash "$user"
