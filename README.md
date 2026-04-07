@@ -47,3 +47,9 @@
 * **operator:** Обмежений доступ. Дозволено лише:
     * `systemctl start/stop/restart/status mywebapp.service`
     * `nginx -s reload`
+
+
+# Документацію по розгортанню
+
+## Посилання на базовий образ віртуальної машини
+*https://ubuntu.com/download/server/thank-you?version=24.04.4&architecture=amd64&lts=true
