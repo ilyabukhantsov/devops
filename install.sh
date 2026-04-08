@@ -74,7 +74,6 @@ cat <<EOF | sudo tee /etc/systemd/system/mywebapp.service
 [Unit]
 Description=Notes Service (KPI Lab 1)
 After=network.target mariadb.service
-Requires=mywebapp.socket
 
 [Service]
 User=app
