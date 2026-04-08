@@ -102,3 +102,7 @@ sudo su - operator
 sudo systemctl restart mywebapp.service
 cat /home/student/gradebook
 # Result: 6
+
+# Api health check
+curl -I http://localhost/health/alive
+curl -I http://localhost/health/ready
