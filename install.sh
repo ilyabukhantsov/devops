@@ -10,25 +10,36 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y nginx mariadb-server openjdk-21-jdk sudo git maven curl
 
 echo "--- [2/7] Creating users ---"
-# Check if service user 'app' exists
-if ! id "app" &>/dev/null; then
-    sudo useradd -r -m -d /home/app -s /usr/sbin/nologin app
-else
-    echo "User 'app' already exists, skipping..."
-fi
 
-users=("student" "teacher" "operator")
-for user in "${users[@]}"; do
-    if id "$user" &>/dev/null; then
-        echo "User $user already exists, skipping..."
+create_user_safe() {
+    local username=$1
+    if id "$username" &>/dev/null; then
+        echo "User '$username' already exists, skipping..."
     else
-        sudo useradd -m -s /bin/bash "$user"
-        echo "$user:12345678" | sudo chpasswd
+        if getent group "$username" &>/dev/null; then
+            sudo groupdel "$username" 2>/dev/null || true
+        fi
+        
+        if [ "$username" == "app" ]; then
+            sudo useradd -r -m -d /home/app -s /usr/sbin/nologin app
+        else
+            sudo useradd -m -s /bin/bash "$username"
+            echo "$username:12345678" | sudo chpasswd
+        fi
+        echo "User '$username' created successfully."
     fi
-done
+}
 
-sudo usermod -aG sudo student
-sudo usermod -aG sudo teacher
+create_user_safe "app"
+create_user_safe "student"
+create_user_safe "teacher"
+create_user_safe "operator"
+
+id -nG student | grep -q "\bsudo\b" || sudo usermod -aG sudo student
+id -nG teacher | grep -q "\bsudo\b" || sudo usermod -aG sudo teacher
+
+sudo chage -d 0 teacher 2>/dev/null || true
+sudo chage -d 0 operator 2>/dev/null || true
 
 echo "--- [3/7] Configuring MariaDB (notes_db) ---"
 sudo systemctl start mariadb
