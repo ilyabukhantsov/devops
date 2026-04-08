@@ -10,18 +10,20 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y nginx mariadb-server openjdk-21-jdk sudo git maven curl
 
 echo "--- [2/7] Creating users ---"
-sudo useradd -r -m -d /home/app -s /usr/sbin/nologin app 2>/dev/null || true
+# Check if service user 'app' exists
+if ! id "app" &>/dev/null; then
+    sudo useradd -r -m -d /home/app -s /usr/sbin/nologin app
+else
+    echo "User 'app' already exists, skipping..."
+fi
 
 users=("student" "teacher" "operator")
 for user in "${users[@]}"; do
     if id "$user" &>/dev/null; then
-        echo "User $user already exists"
+        echo "User $user already exists, skipping..."
     else
         sudo useradd -m -s /bin/bash "$user"
         echo "$user:12345678" | sudo chpasswd
-        if [ "$user" != "student" ]; then
-            sudo chage -d 0 "$user"
-        fi
     fi
 done
 
